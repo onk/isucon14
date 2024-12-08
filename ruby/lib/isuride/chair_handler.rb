@@ -83,7 +83,7 @@ module Isuride
 
         ride = tx.xquery('SELECT * FROM rides WHERE chair_id = ? ORDER BY updated_at DESC LIMIT 1', @current_chair.id).first
         unless ride.nil?
-          status = get_latest_ride_status(tx, ride.fetch(:id))
+          status = ride.fetch(:status)
           if status != 'COMPLETED' && status != 'CANCELED'
             if req.latitude == ride.fetch(:pickup_latitude) && req.longitude == ride.fetch(:pickup_longitude) && status == 'ENROUTE'
               tx.xquery('INSERT INTO ride_statuses (id, ride_id, status) VALUES (?, ?, ?)', ULID.generate, ride.fetch(:id), 'PICKUP')
@@ -114,7 +114,7 @@ module Isuride
         yet_sent_ride_status = tx.xquery('SELECT * FROM ride_statuses WHERE ride_id = ? AND chair_sent_at IS NULL ORDER BY created_at ASC LIMIT 1', ride.fetch(:id)).first
         status =
           if yet_sent_ride_status.nil?
-            get_latest_ride_status(tx, ride.fetch(:id))
+            ride.fetch(:status)
           else
             yet_sent_ride_status.fetch(:status)
           end
@@ -169,7 +169,7 @@ module Isuride
           tx.xquery('UPDATE rides SET status = ?, updated_at = ? WHERE id = ?', 'ENROUTE', ride.fetch(:updated_at), ride.fetch(:id))
         # After Picking up user
         when 'CARRYING'
-          status = get_latest_ride_status(tx, ride.fetch(:id))
+          status = ride.fetch(:status)
           if status != 'PICKUP'
             raise HttpError.new(400, 'chair has not arrived yet')
           end

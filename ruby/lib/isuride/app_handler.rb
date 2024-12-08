@@ -107,7 +107,7 @@ module Isuride
         rides = tx.xquery('SELECT * FROM rides WHERE user_id = ? ORDER BY created_at DESC', @current_user.id)
 
         rides.filter_map do |ride|
-          status = get_latest_ride_status(tx, ride.fetch(:id))
+          status = ride.fetch(:status)
           if status != 'COMPLETED'
             next
           end
@@ -169,7 +169,7 @@ module Isuride
         rides = tx.xquery('SELECT * FROM rides WHERE user_id = ?', @current_user.id).to_a
 
         continuing_ride_count = rides.count do |ride|
-          status = get_latest_ride_status(tx, ride.fetch(:id))
+          status = ride.fetch(:status)
           status != 'COMPLETED'
         end
 
@@ -263,7 +263,7 @@ module Isuride
         if ride.nil?
           raise HttpError.new(404, 'ride not found')
         end
-        status = get_latest_ride_status(tx, ride.fetch(:id))
+        status = ride.fetch(:status)
 
         if status != 'ARRIVED'
           raise HttpError.new(400, 'not arrived yet')
@@ -317,7 +317,7 @@ module Isuride
         yet_sent_ride_status = tx.xquery('SELECT * FROM ride_statuses WHERE ride_id = ? AND app_sent_at IS NULL ORDER BY created_at ASC LIMIT 1', ride.fetch(:id)).first
         status =
           if yet_sent_ride_status.nil?
-            get_latest_ride_status(tx, ride.fetch(:id))
+            ride.fetch(:status)
           else
             yet_sent_ride_status.fetch(:status)
           end
@@ -411,7 +411,7 @@ module Isuride
           skip = false
           rides.each do |ride|
             # 過去にライドが存在し、かつ、それが完了していない場合はスキップ
-            status = get_latest_ride_status(tx, ride.fetch(:id))
+            status = ride.fetch(:status)
             if status != 'COMPLETED'
               skip = true
               break
