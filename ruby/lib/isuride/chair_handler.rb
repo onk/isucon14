@@ -87,10 +87,12 @@ module Isuride
           if status != 'COMPLETED' && status != 'CANCELED'
             if req.latitude == ride.fetch(:pickup_latitude) && req.longitude == ride.fetch(:pickup_longitude) && status == 'ENROUTE'
               tx.xquery('INSERT INTO ride_statuses (id, ride_id, status) VALUES (?, ?, ?)', ULID.generate, ride.fetch(:id), 'PICKUP')
+              tx.xquery('UPDATE rides SET status = ?, updated_at = ? WHERE id = ?', 'PICKUP', ride.fetch(:updated_at), ride.fetch(:id))
             end
 
             if req.latitude == ride.fetch(:destination_latitude) && req.longitude == ride.fetch(:destination_longitude) && status == 'CARRYING'
               tx.xquery('INSERT INTO ride_statuses (id, ride_id, status) VALUES (?, ?, ?)', ULID.generate, ride.fetch(:id), 'ARRIVED')
+              tx.xquery('UPDATE rides SET status = ?, updated_at = ? WHERE id = ?', 'ARRIVED', ride.fetch(:updated_at), ride.fetch(:id))
             end
           end
         end
