@@ -208,7 +208,11 @@ module Isuride
 
         ride = tx.xquery('SELECT * FROM rides WHERE id = ?', ride_id).first
 
-        calculate_discounted_fare(tx, @current_user.id, ride, req.pickup_coordinate.latitude, req.pickup_coordinate.longitude, req.destination_coordinate.latitude, req.destination_coordinate.longitude)
+        _fare = calculate_discounted_fare(tx, @current_user.id, ride, req.pickup_coordinate.latitude, req.pickup_coordinate.longitude, req.destination_coordinate.latitude, req.destination_coordinate.longitude)
+
+        tx.xquery('UPDATE rides SET fare = ? WHERE id = ?', _fare, ride_id)
+
+        _fare
       end
 
       status(202)
