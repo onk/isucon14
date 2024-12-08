@@ -269,7 +269,7 @@ module Isuride
           raise HttpError.new(400, 'not arrived yet')
         end
 
-        tx.xquery('UPDATE rides SET evaluation = ? WHERE id = ?', req.evaluation, ride_id)
+        tx.xquery('UPDATE rides SET evaluation = ?, status = ? WHERE id = ?', req.evaluation, 'COMPLETED', ride_id)
         if tx.affected_rows == 0
           raise HttpError.new(404, 'ride not found')
         end
