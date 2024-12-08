@@ -166,6 +166,7 @@ module Isuride
         # Acknowledge the ride
         when 'ENROUTE'
           tx.xquery('INSERT INTO ride_statuses (id, ride_id, status) VALUES (?, ?, ?)', ULID.generate, ride.fetch(:id), 'ENROUTE')
+          tx.xquery('UPDATE rides SET status = ?, updated_at = ? WHERE id = ?', 'ENROUTE', ride.fetch(:updated_at), ride.fetch(:id))
         # After Picking up user
         when 'CARRYING'
           status = get_latest_ride_status(tx, ride.fetch(:id))
@@ -173,6 +174,7 @@ module Isuride
             raise HttpError.new(400, 'chair has not arrived yet')
           end
           tx.xquery('INSERT INTO ride_statuses (id, ride_id, status) VALUES (?, ?, ?)', ULID.generate, ride.fetch(:id), 'CARRYING')
+          tx.xquery('UPDATE rides SET status = ?, updated_at = ? WHERE id = ?', 'CARRYING', ride.fetch(:updated_at), ride.fetch(:id))
         else
           raise HttpError.new(400, 'invalid status')
         end
