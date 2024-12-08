@@ -156,3 +156,7 @@ ALTER TABLE `chairs`
 ALTER TABLE `chairs`
   ADD COLUMN total_distance  INTEGER NOT NULL DEFAULT 0 AFTER longitude,
   ADD COLUMN total_distance_updated_at DATETIME(6) AFTER total_distance;
+
+-- MATCHING から COMPLETED までは ride_id を持つ
+ALTER TABLE `chairs`
+  ADD COLUMN `current_ride_id` varchar(26) DEFAULT NULL AFTER `is_active`;
