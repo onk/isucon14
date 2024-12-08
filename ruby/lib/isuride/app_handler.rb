@@ -107,7 +107,7 @@ module Isuride
         rides = tx.xquery("SELECT * FROM rides WHERE user_id = ? AND status = 'COMPLETED' ORDER BY created_at DESC", @current_user.id)
 
         rides.filter_map do |ride|
-          fare = calculate_discounted_fare(tx, @current_user.id, ride, ride.fetch(:pickup_latitude),  ride.fetch(:pickup_longitude), ride.fetch(:destination_latitude), ride.fetch(:destination_longitude))
+          fare = ride.fetch(:fare)
 
           chair = tx.xquery('SELECT * FROM chairs WHERE id = ?', ride.fetch(:chair_id)).first
           owner = tx.xquery('SELECT * FROM owners WHERE id = ?', chair.fetch(:owner_id)).first
@@ -287,7 +287,7 @@ module Isuride
           raise HttpError.new(400, 'payment token not registered')
         end
 
-        fare = calculate_discounted_fare(tx, ride.fetch(:user_id), ride, ride.fetch(:pickup_latitude), ride.fetch(:pickup_longitude), ride.fetch(:destination_latitude), ride.fetch(:destination_longitude))
+        fare = ride.fetch(:fare)
 
         payment_gateway_url = tx.query("SELECT value FROM settings WHERE name = 'payment_gateway_url'").first.fetch(:value)
 
@@ -323,7 +323,7 @@ module Isuride
             yet_sent_ride_status.fetch(:status)
           end
 
-        fare = calculate_discounted_fare(tx, @current_user.id, ride, ride.fetch(:pickup_latitude), ride.fetch(:pickup_longitude), ride.fetch(:destination_latitude), ride.fetch(:destination_longitude))
+        fare = ride.fetch(:fare)
 
         response = {
           data: {
