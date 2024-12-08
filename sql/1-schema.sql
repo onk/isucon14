@@ -167,5 +167,5 @@ ALTER TABLE `chairs`
 ALTER TABLE chairs ADD INDEX is_active_current_ride_id(is_active, current_ride_id);
 
 -- 運賃を rides 開始時に計算して書き込んでおく
-ALTER TABLE `rides` ADD COLUMN `fare` INT UNSIGNED NOT NULL COMMENT '運賃' AFTER `evaluation`;
+ALTER TABLE `rides` ADD COLUMN `fare` INT UNSIGNED DEFAULT 0 NOT NULL COMMENT '運賃' AFTER `evaluation`;
 
