@@ -271,6 +271,8 @@ module Isuride
 
         tx.xquery('INSERT INTO ride_statuses (id, ride_id, status) VALUES (?, ?, ?)', ULID.generate, ride_id, 'COMPLETED')
 
+        tx.xquery('UPDATE chairs SET current_ride_id = NULL WHERE id = ?', ride.fetch(:chair_id))
+
         ride = tx.xquery('SELECT * FROM rides WHERE id = ?', ride_id).first
         if ride.nil?
           raise HttpError.new(404, 'ride not found')
