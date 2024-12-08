@@ -146,3 +146,6 @@ ALTER TABLE chair_locations ADD INDEX chair_id_created_at(chair_id, created_at D
 ALTER TABLE chairs ADD INDEX access_token(access_token);
 ALTER TABLE chairs ADD INDEX owner_id(owner_id);
 
+-- ride_statuses テーブルを都度読まなくて良いように rides テーブルに status カラムを追加
+ALTER TABLE `rides` ADD COLUMN `status` varchar(255) NOT NULL DEFAULT 'MATCHING' AFTER `updated_at`;
+
