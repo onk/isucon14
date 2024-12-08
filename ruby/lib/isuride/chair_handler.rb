@@ -91,8 +91,8 @@ module Isuride
                          end
         tx.xquery('UPDATE chairs SET latitude = ?, longitude = ?, total_distance = ?, total_distance_updated_at = now(), updated_at = updated_at WHERE id = ?', req.latitude, req.longitude, total_distance, @current_chair.id)
 
-        ride = tx.xquery('SELECT * FROM rides WHERE chair_id = ? ORDER BY updated_at DESC LIMIT 1', @current_chair.id).first
-        unless ride.nil?
+        if @current_chair.current_ride_id
+          ride = tx.xquery('SELECT * FROM rides WHERE id = ?', @current_chair.current_ride_id).first
           status = ride.fetch(:status)
           if status != 'COMPLETED' && status != 'CANCELED'
             if req.latitude == ride.fetch(:pickup_latitude) && req.longitude == ride.fetch(:pickup_longitude) && status == 'ENROUTE'
