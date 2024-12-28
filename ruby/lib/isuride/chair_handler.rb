@@ -17,6 +17,8 @@ module Isuride
       :updated_at,
       :latitude,
       :longitude,
+      :total_distance,
+      :total_distance_updated_at,
     )
 
     before do
