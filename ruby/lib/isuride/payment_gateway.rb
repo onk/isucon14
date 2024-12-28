@@ -36,6 +36,8 @@ module Isuride
     end
 
     def _request_post_payment(req, retry_count = 0)
+      uri = URI.parse("#{@payment_gateway_url}/payments")
+
       raise if retry_count > 5
       Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https') do |http|
         res = http.request(req)
