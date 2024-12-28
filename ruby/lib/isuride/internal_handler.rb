@@ -21,11 +21,10 @@ module Isuride
       def match_chair_for_ride(ride)
         # 速度が速い順に椅子を探す
         chairs = db.query(<<~SQL).to_a
-          SELECT chairs.*
+          SELECT *
           FROM chairs
-          JOIN chair_models ON chairs.model = chair_models.name
           WHERE is_active = TRUE AND current_ride_id IS NULL
-          ORDER BY chair_models.speed DESC
+          ORDER BY chairs.speed DESC
           LIMIT 100
         SQL
 
