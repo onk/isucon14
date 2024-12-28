@@ -93,11 +93,15 @@ module Isuride
             if req.latitude == ride.fetch(:pickup_latitude) && req.longitude == ride.fetch(:pickup_longitude) && status == 'ENROUTE'
               tx.xquery('INSERT INTO ride_statuses (id, ride_id, status) VALUES (?, ?, ?)', ULID.generate, ride.fetch(:id), 'PICKUP')
               tx.xquery('UPDATE rides SET status = ?, updated_at = ? WHERE id = ?', 'PICKUP', ride.fetch(:updated_at), ride.fetch(:id))
+              redis.call('RPUSH', "#{ride.fetch(:id)}:app", "PICKUP")
+              redis.call('RPUSH', "#{ride.fetch(:id)}:chair", "PICKUP")
             end
 
             if req.latitude == ride.fetch(:destination_latitude) && req.longitude == ride.fetch(:destination_longitude) && status == 'CARRYING'
               tx.xquery('INSERT INTO ride_statuses (id, ride_id, status) VALUES (?, ?, ?)', ULID.generate, ride.fetch(:id), 'ARRIVED')
               tx.xquery('UPDATE rides SET status = ?, updated_at = ? WHERE id = ?', 'ARRIVED', ride.fetch(:updated_at), ride.fetch(:id))
+              redis.call('RPUSH', "#{ride.fetch(:id)}:app", "ARRIVED")
+              redis.call('RPUSH', "#{ride.fetch(:id)}:chair", "ARRIVED")
             end
           end
         end
@@ -176,6 +180,8 @@ module Isuride
         when 'ENROUTE'
           tx.xquery('INSERT INTO ride_statuses (id, ride_id, status) VALUES (?, ?, ?)', ULID.generate, ride.fetch(:id), 'ENROUTE')
           tx.xquery('UPDATE rides SET status = ?, updated_at = ? WHERE id = ?', 'ENROUTE', ride.fetch(:updated_at), ride.fetch(:id))
+          redis.call('RPUSH', "#{ride.fetch(:id)}:app", "ENROUTE")
+          redis.call('RPUSH', "#{ride.fetch(:id)}:chair", "ENROUTE")
         # After Picking up user
         when 'CARRYING'
           status = ride.fetch(:status)
@@ -184,6 +190,8 @@ module Isuride
           end
           tx.xquery('INSERT INTO ride_statuses (id, ride_id, status) VALUES (?, ?, ?)', ULID.generate, ride.fetch(:id), 'CARRYING')
           tx.xquery('UPDATE rides SET status = ?, updated_at = ? WHERE id = ?', 'CARRYING', ride.fetch(:updated_at), ride.fetch(:id))
+          redis.call('RPUSH', "#{ride.fetch(:id)}:app", "CARRYING")
+          redis.call('RPUSH', "#{ride.fetch(:id)}:chair", "CARRYING")
         else
           raise HttpError.new(400, 'invalid status')
         end

@@ -254,6 +254,8 @@ module Isuride
         end
 
         tx.xquery('UPDATE rides SET evaluation = ?, status = ? WHERE id = ?', req.evaluation, 'COMPLETED', ride_id)
+        redis.call('RPUSH', "#{ride.fetch(:id)}:app", "COMPLETED")
+        redis.call('RPUSH', "#{ride.fetch(:id)}:chair", "COMPLETED")
         if tx.affected_rows == 0
           raise HttpError.new(404, 'ride not found')
         end
