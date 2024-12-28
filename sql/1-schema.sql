@@ -160,3 +160,6 @@ ALTER TABLE `chairs`
 -- MATCHING から COMPLETED までは ride_id を持つ
 ALTER TABLE `chairs`
   ADD COLUMN `current_ride_id` varchar(26) DEFAULT NULL AFTER `is_active`;
+
+ALTER TABLE `chairs`
+  ADD COLUMN `speed` INTEGER NOT NULL AFTER `model`;
