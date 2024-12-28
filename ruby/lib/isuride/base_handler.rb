@@ -48,6 +48,10 @@ module Isuride
         Thread.current[:db] ||= connect_db
       end
 
+      def redis
+        Thread.current[:redis] ||= connect_redis
+      end
+
       def connect_db
         Mysql2::Client.new(
           host: ENV.fetch('ISUCON_DB_HOST', '127.0.0.1'),
@@ -59,6 +63,13 @@ module Isuride
           cast_booleans: true,
           database_timezone: :utc,
           application_timezone: :utc,
+        )
+      end
+
+      def connect_redis
+        RedisClient.new(
+          host: ENV.fetch('ISUCON_REDIS_HOST', '127.0.0.1'),
+          port: 6379,
         )
       end
 
