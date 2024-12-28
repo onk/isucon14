@@ -11,6 +11,7 @@ module Isuride
       :owner_id,
       :name,
       :model,
+      :speed,
       :is_active,
       :access_token,
       :created_at,
