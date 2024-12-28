@@ -90,10 +90,6 @@ module Isuride
                          end
         tx.xquery('UPDATE chairs SET latitude = ?, longitude = ?, total_distance = ?, total_distance_updated_at = now(), updated_at = updated_at WHERE id = ?', req.latitude, req.longitude, total_distance, @current_chair.id)
 
-        tx.xquery('INSERT INTO chair_locations (id, chair_id, latitude, longitude) VALUES (?, ?, ?, ?)', chair_location_id, @current_chair.id, req.latitude, req.longitude)
-
-        location = tx.xquery('SELECT * FROM chair_locations WHERE id = ?', chair_location_id).first
-
         ride = tx.xquery('SELECT * FROM rides WHERE chair_id = ? ORDER BY updated_at DESC LIMIT 1', @current_chair.id).first
         unless ride.nil?
           status = ride.fetch(:status)
@@ -110,7 +106,7 @@ module Isuride
           end
         end
 
-        { recorded_at: time_msec(location.fetch(:created_at)) }
+        { recorded_at: time_msec(Time.now) }
       end
 
       json(response)
