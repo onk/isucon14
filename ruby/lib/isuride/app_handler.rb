@@ -396,28 +396,9 @@ module Isuride
         end
 
       response = db_transaction do |tx|
-        chairs = tx.query('SELECT * FROM chairs')
+        chairs = tx.query('SELECT * FROM chairs WHERE is_active = TRUE AND current_ride_id IS NULL')
 
         nearby_chairs = chairs.filter_map do |chair|
-          unless chair.fetch(:is_active)
-            next
-          end
-
-          rides = tx.xquery('SELECT * FROM rides WHERE chair_id = ? ORDER BY created_at DESC LIMIT 1', chair.fetch(:id))
-
-          skip = false
-          rides.each do |ride|
-            # 過去にライドが存在し、かつ、それが完了していない場合はスキップ
-            status = ride.fetch(:status)
-            if status != 'COMPLETED'
-              skip = true
-              break
-            end
-          end
-          if skip
-            next
-          end
-
           # 最新の位置情報を取得
           if chair[:latitude] == 999999
             next
@@ -436,11 +417,9 @@ module Isuride
           end
         end
 
-        retrieved_at = tx.query('SELECT CURRENT_TIMESTAMP(6)', as: :array).first[0]
-
         {
           chairs: nearby_chairs,
-          retrieved_at: time_msec(retrieved_at),
+          retrieved_at: time_msec(Time.now),
         }
       end
 
