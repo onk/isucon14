@@ -150,5 +150,5 @@ ALTER TABLE chairs ADD INDEX owner_id(owner_id);
 ALTER TABLE `rides` ADD COLUMN `status` varchar(255) NOT NULL DEFAULT 'MATCHING' AFTER `updated_at`;
 
 ALTER TABLE `chairs`
-  ADD COLUMN latitude  INTEGER NOT NULL AFTER updated_at,
-  ADD COLUMN longitude INTEGER NOT NULL AFTER latitude;
+  ADD COLUMN latitude  INTEGER NOT NULL DEFAULT 999999 AFTER updated_at,
+  ADD COLUMN longitude INTEGER NOT NULL DEFAULT 999999 AFTER latitude;
