@@ -19,7 +19,16 @@ module Isuride
 
     helpers do
       def match_chair_for_ride(ride)
-        chairs = db.query('SELECT * FROM chairs WHERE is_active = TRUE AND current_ride_id IS NULL ORDER BY RAND() LIMIT 100').to_a
+        # 速度が速い順に椅子を探す
+        chairs = db.query(<<~SQL).to_a
+          SELECT chairs.*
+          FROM chairs
+          JOIN chair_models ON chairs.model = chair_models.name
+          WHERE is_active = TRUE AND current_ride_id IS NULL
+          ORDER BY chair_models.speed DESC
+          LIMIT 100
+        SQL
+
         chairs.each do |matched|
           # 椅子が別の町だったらスキップして次の椅子を探す
           # distanec が > 50 だったら別の町ということにする
