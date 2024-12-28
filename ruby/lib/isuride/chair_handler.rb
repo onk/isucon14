@@ -56,7 +56,9 @@ module Isuride
       chair_id = ULID.generate
       access_token = SecureRandom.hex(32)
 
-      db.xquery('INSERT INTO chairs (id, owner_id, name, model, is_active, access_token) VALUES (?, ?, ?, ?, ?, ?)', chair_id, owner.fetch(:id), req.name, req.model, false, access_token)
+      speed = db.xquery('SELECT speed FROM chair_models WHERE name = ?', req.model).first[:speed]
+
+      db.xquery('INSERT INTO chairs (id, owner_id, name, model, speed, is_active, access_token) VALUES (?, ?, ?, ?, ?, ?, ?)', chair_id, owner.fetch(:id), req.name, req.model, speed, false, access_token)
 
       cookies.set(:chair_session, httponly: false, value: access_token, path: '/')
       status(201)
