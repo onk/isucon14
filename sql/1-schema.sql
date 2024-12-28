@@ -163,3 +163,6 @@ ALTER TABLE `chairs`
 
 ALTER TABLE `chairs`
   ADD COLUMN `speed` INTEGER NOT NULL AFTER `model`;
+
+ALTER TABLE chairs ADD INDEX is_active_current_ride_id(is_active, current_ride_id);
+
