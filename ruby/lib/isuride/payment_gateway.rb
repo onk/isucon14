@@ -26,23 +26,23 @@ module Isuride
       idenpotency_key = ULID.generate
 
       uri = URI.parse("#{@payment_gateway_url}/payments")
-      Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https') do |http|
-        req = Net::HTTP::Post.new(uri.request_uri)
-        req.body = b
-        req['Content-Type'] = 'application/json'
-        req['Authorization'] = "Bearer #{@token}"
-        req['Idempotency-Key'] = idenpotency_key
+      req = Net::HTTP::Post.new(uri.request_uri)
+      req.body = b
+      req['Content-Type'] = 'application/json'
+      req['Authorization'] = "Bearer #{@token}"
+      req['Idempotency-Key'] = idenpotency_key
 
-        _request_post_payment(req)
-      end
+      _request_post_payment(req)
     end
 
     def _request_post_payment(req, retry_count = 0)
       raise if retry_count > 5
-      res = http.request(req)
-      if res.code != '204'
-        sleep 0.1
-       _request_post_payment(req, retry_count + 1)
+      Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https') do |http|
+        res = http.request(req)
+        if res.code != '204'
+          sleep 0.1
+         _request_post_payment(req, retry_count + 1)
+        end
       end
     end
   end
