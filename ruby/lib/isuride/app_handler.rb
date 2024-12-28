@@ -422,19 +422,18 @@ module Isuride
           end
 
           # 最新の位置情報を取得
-          chair_location = tx.xquery('SELECT * FROM chair_locations WHERE chair_id = ? ORDER BY created_at DESC LIMIT 1', chair.fetch(:id)).first
-          if chair_location.nil?
+          if chair[:latitude] == 999999
             next
           end
 
-          if calculate_distance(latitude, longitude, chair_location.fetch(:latitude), chair_location.fetch(:longitude)) <= distance
+          if calculate_distance(latitude, longitude, chair.fetch(:latitude), chair.fetch(:longitude)) <= distance
             {
               id: chair.fetch(:id),
               name: chair.fetch(:name),
               model: chair.fetch(:model),
               current_coordinate: {
-                latitude: chair_location.fetch(:latitude),
-                longitude: chair_location.fetch(:longitude),
+                latitude: chair.fetch(:latitude),
+                longitude: chair.fetch(:longitude),
               },
             }
           end
