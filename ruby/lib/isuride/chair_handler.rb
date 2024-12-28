@@ -77,6 +77,9 @@ module Isuride
 
       response = db_transaction do |tx|
         chair_location_id = ULID.generate
+        # update latest lat/lon
+        tx.xquery('UPDATE chairs SET latitude = ?, longitude = ?, updated_at = updated_at WHERE id = ?', req.latitude, req.longitude, @current_chair.id)
+
         tx.xquery('INSERT INTO chair_locations (id, chair_id, latitude, longitude) VALUES (?, ?, ?, ?)', chair_location_id, @current_chair.id, req.latitude, req.longitude)
 
         location = tx.xquery('SELECT * FROM chair_locations WHERE id = ?', chair_location_id).first
