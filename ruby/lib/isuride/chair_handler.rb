@@ -28,16 +28,10 @@ module Isuride
         next
       end
 
-      access_token = cookies[:chair_session]
-      if access_token.nil?
+      @access_token = cookies[:chair_session]
+      if @access_token.nil?
         raise HttpError.new(401, 'chair_session cookie is required')
       end
-      chair = db.xquery('SELECT * FROM chairs WHERE access_token = ?', access_token).first
-      if chair.nil?
-        raise HttpError.new(401, 'invalid access token')
-      end
-
-      @current_chair = CurrentChair.new(**chair)
     end
 
     ChairPostChairsRequest = Data.define(:name, :model, :chair_register_token)
@@ -62,6 +56,7 @@ module Isuride
       db.xquery('INSERT INTO chairs (id, owner_id, name, model, speed, is_active, access_token) VALUES (?, ?, ?, ?, ?, ?, ?)', chair_id, owner.fetch(:id), req.name, req.model, speed, false, access_token)
 
       cookies.set(:chair_session, httponly: false, value: access_token, path: '/')
+      cookies.set(:chair_id, httponly: false, value: chair_id, path: '/')
       status(201)
       json(id: chair_id, owner_id: owner.fetch(:id))
     end
@@ -72,7 +67,7 @@ module Isuride
     post '/activity' do
       req = bind_json(PostChairActivityRequest)
 
-      db.xquery('UPDATE chairs SET is_active = ? WHERE id = ?', req.is_active, @current_chair.id)
+      db.xquery('UPDATE chairs SET is_active = ? WHERE id = ?', req.is_active, current_chair_id)
 
       status(204)
     end
@@ -82,6 +77,7 @@ module Isuride
     # POST /api/chair/coordinate
     post '/coordinate' do
       req = bind_json(PostChairCoordinateRequest)
+      set_current_chair
 
       response = db_transaction do |tx|
         chair_location_id = ULID.generate
@@ -119,7 +115,7 @@ module Isuride
     # GET /api/chair/notification
     get '/notification' do
       response = db_transaction do |tx|
-        ride = tx.xquery('SELECT * FROM rides WHERE chair_id = ? ORDER BY updated_at DESC LIMIT 1', @current_chair.id).first
+        ride = tx.xquery('SELECT * FROM rides WHERE chair_id = ? ORDER BY updated_at DESC LIMIT 1', current_chair_id).first
         unless ride
           halt json(data: nil, retry_after_ms: 900)
         end
@@ -171,7 +167,7 @@ module Isuride
 
       db_transaction do |tx|
         ride = tx.xquery('SELECT * FROM rides WHERE id = ? FOR UPDATE', ride_id).first
-        if ride.fetch(:chair_id) != @current_chair.id
+        if ride.fetch(:chair_id) != current_chair_id
           raise HttpError.new(400, 'not assigned to this ride')
         end
 
@@ -194,6 +190,17 @@ module Isuride
       end
 
       status(204)
+    end
+
+    helpers do
+      def set_current_chair
+        chair = db.xquery('SELECT * FROM chairs WHERE access_token = ?', @access_token).first
+        @current_chair = CurrentChair.new(**chair)
+      end
+
+      def current_chair_id
+        cookies[:chair_id]
+      end
     end
   end
 end
