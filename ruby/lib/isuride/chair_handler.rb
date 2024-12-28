@@ -15,6 +15,8 @@ module Isuride
       :access_token,
       :created_at,
       :updated_at,
+      :latitude,
+      :longitude,
     )
 
     before do
