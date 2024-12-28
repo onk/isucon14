@@ -104,14 +104,9 @@ module Isuride
     # GET /api/app/rides
     get '/rides' do
       items = db_transaction do |tx|
-        rides = tx.xquery('SELECT * FROM rides WHERE user_id = ? ORDER BY created_at DESC', @current_user.id)
+        rides = tx.xquery("SELECT * FROM rides WHERE user_id = ? AND status = 'COMPLETED' ORDER BY created_at DESC", @current_user.id)
 
         rides.filter_map do |ride|
-          status = ride.fetch(:status)
-          if status != 'COMPLETED'
-            next
-          end
-
           fare = calculate_discounted_fare(tx, @current_user.id, ride, ride.fetch(:pickup_latitude),  ride.fetch(:pickup_longitude), ride.fetch(:destination_latitude), ride.fetch(:destination_longitude))
 
           chair = tx.xquery('SELECT * FROM chairs WHERE id = ?', ride.fetch(:chair_id)).first
