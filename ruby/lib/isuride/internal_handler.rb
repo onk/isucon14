@@ -19,8 +19,13 @@ module Isuride
 
     helpers do
       def match_chair_for_ride(ride)
-        chairs = db.query('SELECT * FROM chairs WHERE is_active = TRUE AND current_ride_id IS NULL ORDER BY RAND() LIMIT 10').to_a
+        chairs = db.query('SELECT * FROM chairs WHERE is_active = TRUE AND current_ride_id IS NULL ORDER BY RAND() LIMIT 100').to_a
         chairs.each do |matched|
+          # 椅子が別の町だったらスキップして次の椅子を探す
+          # distanec が > 50 だったら別の町ということにする
+          distance = calculate_distance(ride.fetch(:pickup_latitude), ride.fetch(:pickup_longitude), matched.fetch(:latitude), matched.fetch(:longitude))
+          next if distance > 50
+
           empty = db.xquery('SELECT COUNT(*) = 0 FROM (SELECT COUNT(chair_sent_at) = 6 AS completed FROM ride_statuses WHERE ride_id IN (SELECT id FROM rides WHERE chair_id = ?) GROUP BY ride_id) is_completed WHERE completed = FALSE', matched.fetch(:id), as: :array).first[0]
           if empty > 0
             db.xquery('UPDATE rides SET chair_id = ? WHERE id = ?', matched.fetch(:id), ride.fetch(:id))
