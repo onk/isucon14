@@ -19,6 +19,7 @@ module Isuride
       :longitude,
       :total_distance,
       :total_distance_updated_at,
+      :current_ride_id,
     )
 
     before do
