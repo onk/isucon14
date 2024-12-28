@@ -161,10 +161,10 @@ module Isuride
         end
 
         case req.status
-	# Acknowledge the ride
+        # Acknowledge the ride
         when 'ENROUTE'
           tx.xquery('INSERT INTO ride_statuses (id, ride_id, status) VALUES (?, ?, ?)', ULID.generate, ride.fetch(:id), 'ENROUTE')
-	# After Picking up user
+        # After Picking up user
         when 'CARRYING'
           status = get_latest_ride_status(tx, ride.fetch(:id))
           if status != 'PICKUP'

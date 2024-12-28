@@ -58,10 +58,10 @@ module Isuride
       db_transaction do |tx|
         tx.xquery('INSERT INTO users (id, username, firstname, lastname, date_of_birth, access_token, invitation_code) VALUES (?, ?, ?, ?, ?, ?, ?)', user_id, req.username, req.firstname, req.lastname, req.date_of_birth, access_token, invitation_code)
 
-	# 初回登録キャンペーンのクーポンを付与
+        # 初回登録キャンペーンのクーポンを付与
         tx.xquery('INSERT INTO coupons (user_id, code, discount) VALUES (?, ?, ?)', user_id, 'CP_NEW2024', 3000)
 
-	# 招待コードを使った登録
+        # 招待コードを使った登録
         unless req.invitation_code.nil? || req.invitation_code.empty?
           # 招待する側の招待数をチェック
           coupons = tx.xquery('SELECT * FROM coupons WHERE code = ? FOR UPDATE', "INV_#{req.invitation_code}").to_a
