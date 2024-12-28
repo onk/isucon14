@@ -152,3 +152,7 @@ ALTER TABLE `rides` ADD COLUMN `status` varchar(255) NOT NULL DEFAULT 'MATCHING'
 ALTER TABLE `chairs`
   ADD COLUMN latitude  INTEGER NOT NULL DEFAULT 999999 AFTER updated_at,
   ADD COLUMN longitude INTEGER NOT NULL DEFAULT 999999 AFTER latitude;
+
+ALTER TABLE `chairs`
+  ADD COLUMN total_distance  INTEGER NOT NULL DEFAULT 0 AFTER longitude,
+  ADD COLUMN total_distance_updated_at DATETIME(6) AFTER total_distance;
