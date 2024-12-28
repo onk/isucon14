@@ -13,12 +13,8 @@ module Isuride
         halt 204
       end
 
-      10.times do
-        matched = db.query('SELECT * FROM chairs INNER JOIN (SELECT id FROM chairs WHERE is_active = TRUE ORDER BY RAND() LIMIT 1) AS tmp ON chairs.id = tmp.id LIMIT 1').first
-        unless matched
-          halt 204
-        end
-
+      chairs = db.query('SELECT * FROM chairs WHERE is_active = TRUE AND current_ride_id IS NULL ORDER BY RAND() LIMIT 10').to_a
+      chairs.each do |matched|
         empty = db.xquery('SELECT COUNT(*) = 0 FROM (SELECT COUNT(chair_sent_at) = 6 AS completed FROM ride_statuses WHERE ride_id IN (SELECT id FROM rides WHERE chair_id = ?) GROUP BY ride_id) is_completed WHERE completed = FALSE', matched.fetch(:id), as: :array).first[0]
         if empty > 0
           db.xquery('UPDATE rides SET chair_id = ? WHERE id = ?', matched.fetch(:id), ride.fetch(:id))
