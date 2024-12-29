@@ -2,6 +2,7 @@
 
 $LOAD_PATH.unshift(File.join('lib', __dir__))
 
+require 'isuride/base_handler'
 require 'isuride/app_handler'
 require 'isuride/chair_handler'
 require 'isuride/initialize_handler'

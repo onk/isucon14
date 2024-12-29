@@ -1,9 +1,5 @@
 # frozen_string_literal: true
 
-require 'ulid'
-
-require 'isuride/base_handler'
-
 module Isuride
   class ChairHandler < BaseHandler
     CurrentChair = Data.define(

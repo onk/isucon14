@@ -1,11 +1,6 @@
 # frozen_string_literal: true
 
-require 'mysql2'
-require 'mysql2-cs-bind'
-require 'sinatra/base'
-require 'sinatra/cookies'
-require 'sinatra/json'
-require 'active_support/all'
+Bundler.require
 
 # mysql2-cs-bind gem にマイクロ秒のサポートを入れる
 module Mysql2CsBindPatch

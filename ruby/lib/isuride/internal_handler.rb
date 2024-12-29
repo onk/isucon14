@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'isuride/base_handler'
-
 module Isuride
   class InternalHandler < BaseHandler
     # このAPIをインスタンス内から一定間隔で叩かせることで、椅子とライドをマッチングさせる

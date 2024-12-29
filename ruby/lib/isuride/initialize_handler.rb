@@ -2,8 +2,6 @@
 
 require 'open3'
 
-require 'isuride/base_handler'
-
 module Isuride
   class InitializeHandler < BaseHandler
     PostInitializeRequest = Data.define(:payment_server)

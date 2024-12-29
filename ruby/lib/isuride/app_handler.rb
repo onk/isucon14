@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'ulid'
-
 require 'isuride/base_handler'
 require 'isuride/payment_gateway'
 
