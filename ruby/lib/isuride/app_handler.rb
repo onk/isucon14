@@ -448,27 +448,7 @@ module Isuride
         total_rides_count = 0
         total_evaluation = 0.0
         rides.each do |ride|
-          ride_statuses = tx.xquery('SELECT * FROM ride_statuses WHERE ride_id = ? ORDER BY created_at', ride.fetch(:id))
-
-          arrived_at = nil
-          pickup_at = nil
-          is_completed = false
-          ride_statuses.each do |status|
-            case status.fetch(:status)
-            when 'ARRIVED'
-              arrived_at = status.fetch(:created_at)
-            when 'CARRYING'
-              pickup_at = status.fetch(:created_at)
-            when 'COMPLETED'
-              is_completed = true
-            end
-          end
-          if arrived_at.nil? || pickup_at.nil?
-            next
-          end
-          unless is_completed
-            next
-          end
+          next unless ride.fetch(:status) == 'COMPLETED'
 
           total_rides_count += 1
           total_evaluation += ride.fetch(:evaluation)
