@@ -198,6 +198,7 @@ module Isuride
         _fare = calculate_discounted_fare(tx, @current_user.id, ride, req.pickup_coordinate.latitude, req.pickup_coordinate.longitude, req.destination_coordinate.latitude, req.destination_coordinate.longitude)
 
         tx.xquery('UPDATE rides SET fare = ? WHERE id = ?', _fare, ride_id)
+        tx.xquery('UPDATE users SET current_ride_id = ? WHERE id = ?', ride_id, @current_user.id)
 
         _fare
       end
@@ -285,6 +286,8 @@ module Isuride
         rescue PaymentGateway::ErroredUpstream => e
           raise HttpError.new(502, e.message)
         end
+
+        tx.xquery('UPDATE users SET current_ride_id = NULL WHERE id = ?', ride_id, ride.fetch(:user_id))
 
         {
           completed_at: time_msec(ride.fetch(:updated_at)),
