@@ -113,10 +113,12 @@ module Isuride
     # GET /api/chair/notification
     get '/notification' do
       response = db_transaction do |tx|
-        ride = tx.xquery('SELECT * FROM rides WHERE chair_id = ? ORDER BY updated_at DESC LIMIT 1', current_chair_id).first
-        unless ride
+        set_current_chair
+        unless @current_chair.current_ride_id
           halt json(data: nil, retry_after_ms: 300)
         end
+
+        ride = tx.xquery('SELECT * FROM rides WHERE id = ?', @current_chair.current_ride_id).first
 
         yet_sent_ride_status = redis.call('LPOP', "#{ride.fetch(:id)}:chair")
         status =
