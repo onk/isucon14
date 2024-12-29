@@ -82,6 +82,10 @@ module Isuride
         end
       end
 
+      def db_without_transaction(&block)
+        block.call(db)
+      end
+
       def time_msec(time)
         time.to_i*1000 + time.usec/1000
       end
