@@ -24,6 +24,7 @@ module Isuride
 
     helpers do
       def match_chair_for_ride(ride)
+        now_msec = time_msec(Time.now)
         chairs = db.query(<<~SQL).to_a
           SELECT *
           FROM chairs
@@ -52,10 +53,21 @@ module Isuride
         }
 
         sorted.each do |matched|
+          pickup_distance = calculate_distance(
+            ride.fetch(:pickup_latitude), ride.fetch(:pickup_longitude),
+            matched.fetch(:latitude), matched.fetch(:longitude)
+          )
           # 椅子が別の町だったらスキップして次の椅子を探す
-          # distanec が > 250 だったら別の町ということにする
-          distance = calculate_distance(ride.fetch(:pickup_latitude), ride.fetch(:pickup_longitude), matched.fetch(:latitude), matched.fetch(:longitude))
-          next if distance > 250
+          # distance が > 250 だったら別の町ということにする
+          next if pickup_distance > 250
+
+          # 50 以上かかる場合は近くの椅子が空くまでちょっと (200ms) 待ってみる
+          # 200ms 以上待っても近くの椅子が空かない場合は諦めてアサインする
+          if (pickup_distance + ride_distance).to_f / matched[:speed] > 50
+            if now_msec - time_msec(ride.fetch(:created_at)) < 200
+              next
+            end
+          end
 
           db.xquery('UPDATE rides SET chair_id = ? WHERE id = ?', matched.fetch(:id), ride.fetch(:id))
           db.xquery('UPDATE chairs SET current_ride_id = ? WHERE id = ?', ride.fetch(:id), matched.fetch(:id))
