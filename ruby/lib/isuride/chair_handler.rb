@@ -91,13 +91,13 @@ module Isuride
           status = ride.fetch(:status)
           if status != 'COMPLETED'
             if req.latitude == ride.fetch(:pickup_latitude) && req.longitude == ride.fetch(:pickup_longitude) && status == 'ENROUTE'
-              tx.xquery('UPDATE rides SET status = ?, updated_at = updated_at WHERE id = ?', 'PICKUP', ride.fetch(:id))
+              tx.xquery('UPDATE rides SET status = ? WHERE id = ?', 'PICKUP', ride.fetch(:id))
               redis.call('RPUSH', "#{ride.fetch(:id)}:app", "PICKUP")
               redis.call('RPUSH', "#{ride.fetch(:id)}:chair", "PICKUP")
             end
 
             if req.latitude == ride.fetch(:destination_latitude) && req.longitude == ride.fetch(:destination_longitude) && status == 'CARRYING'
-              tx.xquery('UPDATE rides SET status = ?, updated_at = updated_at WHERE id = ?', 'ARRIVED', ride.fetch(:id))
+              tx.xquery('UPDATE rides SET status = ? WHERE id = ?', 'ARRIVED', ride.fetch(:id))
               redis.call('RPUSH', "#{ride.fetch(:id)}:app", "ARRIVED")
               redis.call('RPUSH', "#{ride.fetch(:id)}:chair", "ARRIVED")
             end
@@ -176,7 +176,7 @@ module Isuride
         case req.status
         # Acknowledge the ride
         when 'ENROUTE'
-          tx.xquery('UPDATE rides SET status = ?, updated_at = updated_at WHERE id = ?', 'ENROUTE', ride.fetch(:id))
+          tx.xquery('UPDATE rides SET status = ? WHERE id = ?', 'ENROUTE', ride.fetch(:id))
           redis.call('RPUSH', "#{ride.fetch(:id)}:app", "ENROUTE")
           redis.call('RPUSH', "#{ride.fetch(:id)}:chair", "ENROUTE")
         # After Picking up user
@@ -185,7 +185,7 @@ module Isuride
           if status != 'PICKUP'
             raise HttpError.new(400, 'chair has not arrived yet')
           end
-          tx.xquery('UPDATE rides SET status = ?, updated_at = updated_at WHERE id = ?', 'CARRYING', ride.fetch(:id))
+          tx.xquery('UPDATE rides SET status = ? WHERE id = ?', 'CARRYING', ride.fetch(:id))
           redis.call('RPUSH', "#{ride.fetch(:id)}:app", "CARRYING")
           redis.call('RPUSH', "#{ride.fetch(:id)}:chair", "CARRYING")
         else
