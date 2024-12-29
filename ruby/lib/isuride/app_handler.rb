@@ -154,8 +154,7 @@ module Isuride
       ride_id = ULID.generate
 
       fare = db_transaction do |tx|
-        ride = tx.xquery("SELECT * FROM rides WHERE user_id = ? ORDER BY updated_at LIMIT 1", @current_user.id).first
-        if ride && ride.fetch(:status) != 'COMPLETED'
+        if @current_user.current_ride_id
           raise HttpError.new(429, 'ride already exists')
         end
 
@@ -171,9 +170,7 @@ module Isuride
 
         tx.xquery('INSERT INTO ride_statuses (id, ride_id, status) VALUES (?, ?, ?)', ULID.generate, ride_id, 'MATCHING')
 
-        ride_count = tx.xquery('SELECT COUNT(*) FROM rides WHERE user_id = ?', @current_user.id, as: :array).first[0]
-
-        if ride_count == 1
+        if @current_user.ride_count == 0
           # 初回利用で、初回利用クーポンがあれば必ず使う
           coupon = tx.xquery("SELECT * FROM coupons WHERE user_id = ? AND code = 'CP_NEW2024' AND used_by IS NULL FOR UPDATE", @current_user.id).first
           if coupon.nil?
