@@ -364,7 +364,7 @@ module Isuride
             name: chair.fetch(:name),
             model: chair.fetch(:model),
             stats: {
-              total_rides_count: chairs.fetch(:total_rides_count),
+              total_rides_count: chair.fetch(:total_rides_count),
               total_evaluation_avg: total_evaluation_avg,
             },
           }
