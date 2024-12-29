@@ -112,6 +112,7 @@ module Isuride
           SELECT *
           FROM chairs
           WHERE is_active = TRUE AND current_ride_id IS NULL
+          AND total_distance_updated_at IS NOT NULL
           ORDER BY chairs.speed DESC
           LIMIT 100
         SQL
