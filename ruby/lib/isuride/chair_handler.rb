@@ -115,7 +115,7 @@ module Isuride
       response = db_transaction do |tx|
         ride = tx.xquery('SELECT * FROM rides WHERE chair_id = ? ORDER BY updated_at DESC LIMIT 1', current_chair_id).first
         unless ride
-          halt json(data: nil, retry_after_ms: 100)
+          halt json(data: nil, retry_after_ms: 300)
         end
 
         yet_sent_ride_status = redis.call('LPOP', "#{ride.fetch(:id)}:chair")
