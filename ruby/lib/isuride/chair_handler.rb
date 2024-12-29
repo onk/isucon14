@@ -137,6 +137,17 @@ module Isuride
           end
         end
 
+        retry_after_ms = case status
+                         when 'ENROUTE'
+                           distance = calculate_distance(@current_chair.latitude, @current_chair.longitude, ride.fetch(:pickup_latitude), ride.fetch(:pickup_longitude))
+                           [(distance / @current_chair.speed) * 1000 , 100].max
+                         when 'CARRYING'
+                           distance = calculate_distance(@current_chair.latitude, @current_chair.longitude, ride.fetch(:destination_latitude), ride.fetch(:destination_longitude))
+                           [(distance / @current_chair.speed) * 1000 , 100].max
+                         else # when 'MATCHING', 'PICKUP', 'ARRIVED', 'COMPLETED'
+                           500
+                         end
+
         {
           data: {
             ride_id: ride.fetch(:id),
@@ -154,7 +165,7 @@ module Isuride
             },
             status:,
           },
-          retry_after_ms: 200,
+          retry_after_ms: retry_after_ms,
         }
       end
 
