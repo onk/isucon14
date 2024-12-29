@@ -80,13 +80,20 @@ module Isuride
         end
 
       res = db_transaction do |tx|
-        chairs = tx.xquery('SELECT * FROM chairs WHERE owner_id = ?', @current_owner.id)
+        chairs = tx.xquery('SELECT * FROM chairs WHERE owner_id = ?', @current_owner.id).to_a
+        if chairs.empty?
+          rides_idx = {}
+        else
+          chair_ids = chairs.map {|c| c.fetch(:id) }
+          rides_all = tx.xquery("SELECT * FROM rides WHERE chair_id IN (?) AND status = 'COMPLETED' AND updated_at BETWEEN ? AND ? + INTERVAL 999 MICROSECOND", chair_ids, since, until_).to_a
+          rides_idx = rides_all.group_by {|r| r.fetch(:chair_id) }
+        end
 
         res = { total_sales: 0, chairs: [] }
 
         model_sales_by_model = Hash.new { |h, k| h[k] = 0 }
         chairs.each do |chair|
-          rides = tx.xquery("SELECT * FROM rides WHERE chair_id = ? AND status = 'COMPLETED' AND updated_at BETWEEN ? AND ? + INTERVAL 999 MICROSECOND", chair.fetch(:id), since, until_).to_a
+          rides = rides_idx[chair.fetch(:id)]
 
           sales = sum_sales(rides)
           res[:total_sales] += sales
