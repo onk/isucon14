@@ -15,6 +15,8 @@ module Isuride
       :invitation_code,
       :created_at,
       :updated_at,
+      :current_ride_id,
+      :ride_count,
     )
 
     before do

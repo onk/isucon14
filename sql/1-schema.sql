@@ -56,6 +56,8 @@ CREATE TABLE users
   invitation_code VARCHAR(30)  NOT NULL COMMENT '招待トークン',
   created_at      DATETIME(6)  NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '登録日時',
   updated_at      DATETIME(6)  NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新日時',
+  current_ride_id VARCHAR(26)  DEFAULT NULL,
+  ride_count      INT          NOT NULL DEFAULT 0;
   PRIMARY KEY (id),
   UNIQUE (username),
   UNIQUE (access_token),
