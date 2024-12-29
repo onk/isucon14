@@ -223,7 +223,7 @@ module Isuride
         raise HttpError.new(400, 'required fields(pickup_coordinate, destination_coordinate) are empty')
       end
 
-      discounted = db_transaction do |tx|
+      discounted = db_without_transaction do |tx|
         calculate_discounted_fare(tx, @current_user.id, nil, req.pickup_coordinate.latitude, req.pickup_coordinate.longitude, req.destination_coordinate.latitude, req.destination_coordinate.longitude)
       end
 
@@ -293,7 +293,7 @@ module Isuride
 
     # GET /api/app/notification
     get '/notification' do
-      response = db_transaction do |tx|
+      response = db_without_transaction do |tx|
         unless @current_user.current_ride_id
           halt json(data: nil, retry_after_ms: 300)
         end
@@ -394,7 +394,7 @@ module Isuride
           end
         end
 
-      response = db_transaction do |tx|
+      response = db_without_transaction do |tx|
         chairs = tx.query('SELECT * FROM chairs WHERE is_active = TRUE AND current_ride_id IS NULL')
 
         nearby_chairs = chairs.filter_map do |chair|

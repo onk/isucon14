@@ -75,7 +75,7 @@ module Isuride
           Time.at(parsed / 1000, parsed % 1000, :millisecond, in: 'UTC')
         end
 
-      res = db_transaction do |tx|
+      res = db_without_transaction do |tx|
         chairs = tx.xquery('SELECT * FROM chairs WHERE owner_id = ?', @current_owner.id).to_a
         if chairs.empty?
           rides_idx = {}

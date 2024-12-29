@@ -76,7 +76,7 @@ module Isuride
     post '/coordinate' do
       req = bind_json(PostChairCoordinateRequest)
 
-      response = db_transaction do |tx|
+      response = db_without_transaction do |tx|
         now = Time.now
         set_current_chair
         # update latest lat/lon, total_distance
@@ -113,7 +113,7 @@ module Isuride
 
     # GET /api/chair/notification
     get '/notification' do
-      response = db_transaction do |tx|
+      response = db_without_transaction do |tx|
         set_current_chair
         unless @current_chair.current_ride_id
           halt json(data: nil, retry_after_ms: 300)
