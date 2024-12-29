@@ -93,7 +93,7 @@ module Isuride
 
         model_sales_by_model = Hash.new { |h, k| h[k] = 0 }
         chairs.each do |chair|
-          rides = rides_idx[chair.fetch(:id)]
+          rides = rides_idx[chair.fetch(:id)] || []
 
           sales = sum_sales(rides)
           res[:total_sales] += sales
