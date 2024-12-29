@@ -120,19 +120,17 @@ module Isuride
           halt json(data: nil, retry_after_ms: 300)
         end
 
-        yet_sent_ride_status = tx.xquery('SELECT * FROM ride_statuses WHERE ride_id = ? AND chair_sent_at IS NULL ORDER BY created_at ASC LIMIT 1', ride.fetch(:id)).first
+        yet_sent_ride_status = redis.call('LPOP', "#{ride.fetch(:id)}:chair")
         status =
           if yet_sent_ride_status.nil?
             ride.fetch(:status)
           else
-            yet_sent_ride_status.fetch(:status)
+            yet_sent_ride_status
           end
 
         user = tx.xquery('SELECT * FROM users WHERE id = ?', ride.fetch(:user_id)).first
 
         unless yet_sent_ride_status.nil?
-          tx.xquery('UPDATE ride_statuses SET chair_sent_at = CURRENT_TIMESTAMP(6) WHERE id = ?', yet_sent_ride_status.fetch(:id))
-
           if status == 'COMPLETED'
             tx.xquery('UPDATE chairs SET current_ride_id = NULL WHERE id = ?', ride.fetch(:chair_id))
           end

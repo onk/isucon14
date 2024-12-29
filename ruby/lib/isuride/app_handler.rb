@@ -304,12 +304,12 @@ module Isuride
           halt json(data: nil, retry_after_ms: 300)
         end
 
-        yet_sent_ride_status = tx.xquery('SELECT * FROM ride_statuses WHERE ride_id = ? AND app_sent_at IS NULL ORDER BY created_at ASC LIMIT 1', ride.fetch(:id)).first
+        yet_sent_ride_status = redis.call('LPOP', "#{ride.fetch(:id)}:app")
         status =
           if yet_sent_ride_status.nil?
             ride.fetch(:status)
           else
-            yet_sent_ride_status.fetch(:status)
+            yet_sent_ride_status
           end
 
         fare = ride.fetch(:fare)
@@ -352,10 +352,6 @@ module Isuride
               total_evaluation_avg: total_evaluation_avg,
             },
           }
-        end
-
-        unless yet_sent_ride_status.nil?
-          tx.xquery('UPDATE ride_statuses SET app_sent_at = CURRENT_TIMESTAMP(6) WHERE id = ?', yet_sent_ride_status.fetch(:id))
         end
 
         response
