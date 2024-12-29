@@ -168,8 +168,6 @@ module Isuride
           req.destination_coordinate.longitude,
         )
 
-        tx.xquery('INSERT INTO ride_statuses (id, ride_id, status) VALUES (?, ?, ?)', ULID.generate, ride_id, 'MATCHING')
-
         if @current_user.ride_count == 0
           # 初回利用で、初回利用クーポンがあれば必ず使う
           coupon = tx.xquery("SELECT * FROM coupons WHERE user_id = ? AND code = 'CP_NEW2024' AND used_by IS NULL FOR UPDATE", @current_user.id).first
@@ -278,8 +276,6 @@ module Isuride
         end
 
         tx.xquery('UPDATE chairs SET total_rides_count = total_rides_count + 1, total_evaluation = total_evaluation + ? WHERE id = ?', req.evaluation, ride.fetch(:chair_id))
-
-        tx.xquery('INSERT INTO ride_statuses (id, ride_id, status) VALUES (?, ?, ?)', ULID.generate, ride_id, 'COMPLETED')
 
         ride = tx.xquery('SELECT * FROM rides WHERE id = ?', ride_id).first
         if ride.nil?
