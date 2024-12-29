@@ -132,6 +132,10 @@ module Isuride
 
         unless yet_sent_ride_status.nil?
           tx.xquery('UPDATE ride_statuses SET chair_sent_at = CURRENT_TIMESTAMP(6) WHERE id = ?', yet_sent_ride_status.fetch(:id))
+
+          if status == 'COMPLETED'
+            tx.xquery('UPDATE chairs SET current_ride_id = NULL WHERE id = ?', ride.fetch(:chair_id))
+          end
         end
 
         {
