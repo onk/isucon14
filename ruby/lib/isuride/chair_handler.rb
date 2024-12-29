@@ -81,7 +81,7 @@ module Isuride
       req = bind_json(PostChairCoordinateRequest)
       set_current_chair
 
-      response = db_without_transaction do |tx|
+      response = db_transaction do |tx|
         chair_location_id = ULID.generate
         # update latest lat/lon, total_distance
         distance = if @current_chair.latitude == 999999
