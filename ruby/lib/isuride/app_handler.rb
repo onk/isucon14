@@ -61,22 +61,7 @@ module Isuride
 
         # 招待コードを使った登録
         unless req.invitation_code.nil? || req.invitation_code.empty?
-          # 招待する側の招待数をチェック
-          coupons = tx.xquery('SELECT * FROM coupons WHERE code = ? FOR UPDATE', "INV_#{req.invitation_code}").to_a
-          if coupons.size >= 3
-            raise HttpError.new(400, 'この招待コードは使用できません。')
-          end
-
-          # ユーザーチェック
-          inviter = tx.xquery('SELECT * FROM users WHERE invitation_code = ?', req.invitation_code).first
-          unless inviter
-            raise HttpError.new(400, 'この招待コードは使用できません。')
-          end
-
-          # 招待クーポン付与
-          tx.xquery('INSERT INTO coupons (user_id, code, discount) VALUES (?, ?, ?)', user_id, "INV_#{req.invitation_code}", 1500)
-          # 招待した人にもRewardを付与
-          tx.xquery("INSERT INTO coupons (user_id, code, discount) VALUES (?, CONCAT(?, '_', FLOOR(UNIX_TIMESTAMP(NOW(3))*1000)), ?)", inviter.fetch(:id), "RWD_#{req.invitation_code}", 1000)
+          issue_invitation_coupons(tx, req.invitation_code)
         end
       end
 
@@ -479,6 +464,25 @@ module Isuride
         discounted_metered_fare = [metered_fare - discount, 0].max
 
         INITIAL_FARE + discounted_metered_fare
+      end
+
+      def issue_invitation_coupons(tx, invitation_code)
+        # 招待する側の招待数をチェック
+        coupons = tx.xquery('SELECT * FROM coupons WHERE code = ? FOR UPDATE', "INV_#{invitation_code}").to_a
+        if coupons.size >= 3
+          raise HttpError.new(400, 'この招待コードは使用できません。')
+        end
+
+        # ユーザーチェック
+        inviter = tx.xquery('SELECT * FROM users WHERE invitation_code = ?', invitation_code).first
+        unless inviter
+          raise HttpError.new(400, 'この招待コードは使用できません。')
+        end
+
+        # 招待クーポン付与
+        tx.xquery('INSERT INTO coupons (user_id, code, discount) VALUES (?, ?, ?)', user_id, "INV_#{invitation_code}", 1500)
+        # 招待した人にもRewardを付与
+        tx.xquery("INSERT INTO coupons (user_id, code, discount) VALUES (?, CONCAT(?, '_', FLOOR(UNIX_TIMESTAMP(NOW(3))*1000)), ?)", inviter.fetch(:id), "RWD_#{invitation_code}", 1000)
       end
     end
   end
