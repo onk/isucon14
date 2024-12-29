@@ -20,6 +20,8 @@ module Isuride
       :longitude,
       :total_distance,
       :total_distance_updated_at,
+      :total_rides_count,
+      :total_evaluation,
       :current_ride_id,
     )
 

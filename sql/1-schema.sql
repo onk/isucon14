@@ -38,6 +38,8 @@ CREATE TABLE chairs
   longitude                 INT          NOT NULL DEFAULT '999999',
   total_distance            INT          NOT NULL DEFAULT '0',
   total_distance_updated_at DATETIME(6),
+  total_rides_count         INT          NOT NULL DEFAULT 0,
+  total_evaluation          INT          NOT NULL DEFAULT 0,
   PRIMARY KEY (id)
 )
   COMMENT = '椅子情報テーブル';
