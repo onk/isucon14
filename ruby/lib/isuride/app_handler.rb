@@ -284,7 +284,7 @@ module Isuride
           raise HttpError.new(502, e.message)
         end
 
-        tx.xquery('UPDATE users SET current_ride_id = NULL, ride_count = ride_count + 1 WHERE id = ?', ride_id, ride.fetch(:user_id))
+        tx.xquery('UPDATE users SET current_ride_id = NULL, ride_count = ride_count + 1 WHERE id = ?', ride.fetch(:user_id))
 
         {
           completed_at: time_msec(ride.fetch(:updated_at)),
