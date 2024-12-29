@@ -105,12 +105,12 @@ CREATE TABLE rides
 DROP TABLE IF EXISTS ride_statuses;
 CREATE TABLE ride_statuses
 (
-  id              VARCHAR(26)                                                                NOT NULL,
-  ride_id VARCHAR(26)                                                                        NOT NULL COMMENT 'ライドID',
-  status          ENUM ('MATCHING', 'ENROUTE', 'PICKUP', 'CARRYING', 'ARRIVED', 'COMPLETED') NOT NULL COMMENT '状態',
-  created_at      DATETIME(6)                                                                NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '状態変更日時',
-  app_sent_at     DATETIME(6)                                                                NULL COMMENT 'ユーザーへの状態通知日時',
-  chair_sent_at   DATETIME(6)                                                                NULL COMMENT '椅子への状態通知日時',
+  id              VARCHAR(26)  NOT NULL,
+  ride_id VARCHAR(26)          NOT NULL COMMENT 'ライドID',
+  status          VARCHAR(255) NOT NULL COMMENT '状態',
+  created_at      DATETIME(6)  NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '状態変更日時',
+  app_sent_at     DATETIME(6)  NULL COMMENT 'ユーザーへの状態通知日時',
+  chair_sent_at   DATETIME(6)  NULL COMMENT '椅子への状態通知日時',
   PRIMARY KEY (id)
 )
   COMMENT = 'ライドステータスの変更履歴テーブル';
