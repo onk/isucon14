@@ -114,7 +114,7 @@ module Isuride
 
     # GET /api/chair/notification
     get '/notification' do
-      response = db_transaction do |tx|
+      response = db_without_transaction do |tx|
         ride = tx.xquery('SELECT * FROM rides WHERE chair_id = ? ORDER BY updated_at DESC LIMIT 1', current_chair_id).first
         unless ride
           halt json(data: nil, retry_after_ms: 300)
@@ -128,7 +128,7 @@ module Isuride
             yet_sent_ride_status.fetch(:status)
           end
 
-        user = tx.xquery('SELECT * FROM users WHERE id = ? FOR SHARE', ride.fetch(:user_id)).first
+        user = tx.xquery('SELECT * FROM users WHERE id = ?', ride.fetch(:user_id)).first
 
         unless yet_sent_ride_status.nil?
           tx.xquery('UPDATE ride_statuses SET chair_sent_at = CURRENT_TIMESTAMP(6) WHERE id = ?', yet_sent_ride_status.fetch(:id))
