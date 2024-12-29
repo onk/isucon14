@@ -84,7 +84,7 @@ module Isuride
                    else
                      0
                    end
-        tx.xquery('UPDATE chairs SET latitude = ?, longitude = ?, total_distance = total_distance + ?, total_distance_updated_at = now(), updated_at = updated_at WHERE id = ?', req.latitude, req.longitude, distance, @current_chair.id)
+        tx.xquery('UPDATE chairs SET latitude = ?, longitude = ?, total_distance = total_distance + ?, total_distance_updated_at = now() WHERE id = ?', req.latitude, req.longitude, distance, @current_chair.id)
 
         if @current_chair.current_ride_id
           ride = tx.xquery('SELECT * FROM rides WHERE id = ?', @current_chair.current_ride_id).first
