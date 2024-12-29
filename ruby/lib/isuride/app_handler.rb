@@ -63,7 +63,7 @@ module Isuride
 
         # 招待コードを使った登録
         unless req.invitation_code.nil? || req.invitation_code.empty?
-          issue_invitation_coupons(tx, req.invitation_code)
+          issue_invitation_coupons(tx, user_id, req.invitation_code)
         end
       end
 
@@ -465,7 +465,7 @@ module Isuride
         INITIAL_FARE + discounted_metered_fare
       end
 
-      def issue_invitation_coupons(tx, invitation_code)
+      def issue_invitation_coupons(tx, user_id, invitation_code)
         # 招待する側の招待数をチェック
         coupons = tx.xquery('SELECT * FROM coupons WHERE code = ? FOR UPDATE', "INV_#{invitation_code}").to_a
         if coupons.size >= 3
