@@ -93,7 +93,7 @@ module Isuride
         if @current_chair.current_ride_id
           ride = tx.xquery('SELECT * FROM rides WHERE id = ?', @current_chair.current_ride_id).first
           status = ride.fetch(:status)
-          if status != 'COMPLETED' && status != 'CANCELED'
+          if status != 'COMPLETED'
             if req.latitude == ride.fetch(:pickup_latitude) && req.longitude == ride.fetch(:pickup_longitude) && status == 'ENROUTE'
               tx.xquery('INSERT INTO ride_statuses (id, ride_id, status) VALUES (?, ?, ?)', ULID.generate, ride.fetch(:id), 'PICKUP')
               tx.xquery('UPDATE rides SET status = ?, updated_at = ? WHERE id = ?', 'PICKUP', ride.fetch(:updated_at), ride.fetch(:id))
