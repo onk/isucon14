@@ -24,14 +24,20 @@ CREATE TABLE chair_models
 DROP TABLE IF EXISTS chairs;
 CREATE TABLE chairs
 (
-  id           VARCHAR(26)  NOT NULL COMMENT '椅子ID',
-  owner_id     VARCHAR(26)  NOT NULL COMMENT 'オーナーID',
-  name         VARCHAR(30)  NOT NULL COMMENT '椅子の名前',
-  model        TEXT         NOT NULL COMMENT '椅子のモデル',
-  is_active    TINYINT(1)   NOT NULL COMMENT '配椅子受付中かどうか',
-  access_token VARCHAR(255) NOT NULL COMMENT 'アクセストークン',
-  created_at   DATETIME(6)  NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '登録日時',
-  updated_at   DATETIME(6)  NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新日時',
+  id                        VARCHAR(26)  NOT NULL COMMENT '椅子ID',
+  owner_id                  VARCHAR(26)  NOT NULL COMMENT 'オーナーID',
+  name                      VARCHAR(30)  NOT NULL COMMENT '椅子の名前',
+  model                     TEXT         NOT NULL COMMENT '椅子のモデル',
+  speed                     INT          NOT NULL,
+  is_active                 TINYINT(1)   NOT NULL COMMENT '配椅子受付中かどうか',
+  current_ride_id           VARCHAR(26) DEFAULT NULL,
+  access_token              VARCHAR(255) NOT NULL COMMENT 'アクセストークン',
+  created_at                DATETIME(6)  NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '登録日時',
+  updated_at                DATETIME(6)  NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新日時',
+  latitude                  INT          NOT NULL DEFAULT '999999',
+  longitude                 INT          NOT NULL DEFAULT '999999',
+  total_distance            INT          NOT NULL DEFAULT '0',
+  total_distance_updated_at DATETIME(6),
   PRIMARY KEY (id)
 )
   COMMENT = '椅子情報テーブル';
@@ -80,16 +86,18 @@ CREATE TABLE payment_tokens
 DROP TABLE IF EXISTS rides;
 CREATE TABLE rides
 (
-  id                    VARCHAR(26) NOT NULL COMMENT 'ライドID',
-  user_id               VARCHAR(26) NOT NULL COMMENT 'ユーザーID',
-  chair_id              VARCHAR(26) NULL     COMMENT '割り当てられた椅子ID',
-  pickup_latitude       INTEGER     NOT NULL COMMENT '配車位置(経度)',
-  pickup_longitude      INTEGER     NOT NULL COMMENT '配車位置(緯度)',
-  destination_latitude  INTEGER     NOT NULL COMMENT '目的地(経度)',
-  destination_longitude INTEGER     NOT NULL COMMENT '目的地(緯度)',
-  evaluation            INTEGER     NULL     COMMENT '評価',
-  created_at            DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '要求日時',
-  updated_at            DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '状態更新日時',
+  id                    VARCHAR(26)      NOT NULL           COMMENT 'ライドID',
+  user_id               VARCHAR(26)      NOT NULL           COMMENT 'ユーザーID',
+  chair_id              VARCHAR(26)      NULL               COMMENT '割り当てられた椅子ID',
+  pickup_latitude       INTEGER          NOT NULL           COMMENT '配車位置(経度)',
+  pickup_longitude      INTEGER          NOT NULL           COMMENT '配車位置(緯度)',
+  destination_latitude  INTEGER          NOT NULL           COMMENT '目的地(経度)',
+  destination_longitude INTEGER          NOT NULL           COMMENT '目的地(緯度)',
+  evaluation            INTEGER          NULL               COMMENT '評価',
+  fare                  INTEGER UNSIGNED NOT NULL DEFAULT 0 COMMENT '運賃',
+  created_at            DATETIME(6)      NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '要求日時',
+  updated_at            DATETIME(6)      NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '状態更新日時',
+  status                VARCHAR(255)     NOT NULL DEFAULT 'MATCHING',
   PRIMARY KEY (id)
 )
   COMMENT = 'ライド情報テーブル';
@@ -145,27 +153,5 @@ ALTER TABLE ride_statuses ADD INDEX ride_id_created_at(ride_id, created_at);
 ALTER TABLE chair_locations ADD INDEX chair_id_created_at(chair_id, created_at DESC);
 ALTER TABLE chairs ADD INDEX access_token(access_token);
 ALTER TABLE chairs ADD INDEX owner_id(owner_id);
-
--- ride_statuses テーブルを都度読まなくて良いように rides テーブルに status カラムを追加
-ALTER TABLE `rides` ADD COLUMN `status` varchar(255) NOT NULL DEFAULT 'MATCHING' AFTER `updated_at`;
-
-ALTER TABLE `chairs`
-  ADD COLUMN latitude  INTEGER NOT NULL DEFAULT 999999 AFTER updated_at,
-  ADD COLUMN longitude INTEGER NOT NULL DEFAULT 999999 AFTER latitude;
-
-ALTER TABLE `chairs`
-  ADD COLUMN total_distance  INTEGER NOT NULL DEFAULT 0 AFTER longitude,
-  ADD COLUMN total_distance_updated_at DATETIME(6) AFTER total_distance;
-
--- MATCHING から COMPLETED までは ride_id を持つ
-ALTER TABLE `chairs`
-  ADD COLUMN `current_ride_id` varchar(26) DEFAULT NULL AFTER `is_active`;
-
-ALTER TABLE `chairs`
-  ADD COLUMN `speed` INTEGER NOT NULL AFTER `model`;
-
 ALTER TABLE chairs ADD INDEX is_active_current_ride_id(is_active, current_ride_id);
-
--- 運賃を rides 開始時に計算して書き込んでおく
-ALTER TABLE `rides` ADD COLUMN `fare` INT UNSIGNED DEFAULT 0 NOT NULL COMMENT '運賃' AFTER `evaluation`;
 
