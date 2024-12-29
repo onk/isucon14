@@ -77,6 +77,7 @@ module Isuride
       req = bind_json(PostChairCoordinateRequest)
 
       response = db_transaction do |tx|
+        now = Time.now
         set_current_chair
         # update latest lat/lon, total_distance
         distance = if @current_chair.latitude
@@ -84,7 +85,7 @@ module Isuride
                    else
                      0
                    end
-        tx.xquery('UPDATE chairs SET latitude = ?, longitude = ?, total_distance = total_distance + ?, total_distance_updated_at = now() WHERE id = ?', req.latitude, req.longitude, distance, @current_chair.id)
+        tx.xquery('UPDATE chairs SET latitude = ?, longitude = ?, total_distance = total_distance + ?, total_distance_updated_at = ? WHERE id = ?', req.latitude, req.longitude, distance, now, @current_chair.id)
 
         if @current_chair.current_ride_id
           ride = tx.xquery('SELECT * FROM rides WHERE id = ?', @current_chair.current_ride_id).first
@@ -104,7 +105,7 @@ module Isuride
           end
         end
 
-        { recorded_at: time_msec(Time.now) }
+        { recorded_at: time_msec(now) }
       end
 
       json(response)
