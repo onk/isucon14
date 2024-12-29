@@ -195,6 +195,9 @@ module Isuride
         tx.xquery('UPDATE rides SET fare = ? WHERE id = ?', _fare, ride_id)
         tx.xquery('UPDATE users SET current_ride_id = ? WHERE id = ?', ride_id, @current_user.id)
 
+        # 近いところに空き椅子があるならすぐマッチングしちゃう
+        match_chair_for_ride(ride, 20)
+
         _fare
       end
 
