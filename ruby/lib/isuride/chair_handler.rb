@@ -78,7 +78,6 @@ module Isuride
       set_current_chair
 
       response = db_transaction do |tx|
-        chair_location_id = ULID.generate
         # update latest lat/lon, total_distance
         distance = if @current_chair.latitude == 999999
                      0
