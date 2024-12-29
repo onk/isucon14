@@ -75,9 +75,9 @@ module Isuride
     # POST /api/chair/coordinate
     post '/coordinate' do
       req = bind_json(PostChairCoordinateRequest)
-      set_current_chair
 
       response = db_transaction do |tx|
+        set_current_chair
         # update latest lat/lon, total_distance
         distance = if @current_chair.latitude
                      calculate_distance(@current_chair.latitude, @current_chair.longitude, req.latitude, req.longitude)
@@ -91,13 +91,13 @@ module Isuride
           status = ride.fetch(:status)
           if status != 'COMPLETED'
             if req.latitude == ride.fetch(:pickup_latitude) && req.longitude == ride.fetch(:pickup_longitude) && status == 'ENROUTE'
-              tx.xquery('UPDATE rides SET status = ?, updated_at = ? WHERE id = ?', 'PICKUP', ride.fetch(:updated_at), ride.fetch(:id))
+              tx.xquery('UPDATE rides SET status = ?, updated_at = updated_at WHERE id = ?', 'PICKUP', ride.fetch(:id))
               redis.call('RPUSH', "#{ride.fetch(:id)}:app", "PICKUP")
               redis.call('RPUSH', "#{ride.fetch(:id)}:chair", "PICKUP")
             end
 
             if req.latitude == ride.fetch(:destination_latitude) && req.longitude == ride.fetch(:destination_longitude) && status == 'CARRYING'
-              tx.xquery('UPDATE rides SET status = ?, updated_at = ? WHERE id = ?', 'ARRIVED', ride.fetch(:updated_at), ride.fetch(:id))
+              tx.xquery('UPDATE rides SET status = ?, updated_at = updated_at WHERE id = ?', 'ARRIVED', ride.fetch(:id))
               redis.call('RPUSH', "#{ride.fetch(:id)}:app", "ARRIVED")
               redis.call('RPUSH', "#{ride.fetch(:id)}:chair", "ARRIVED")
             end
@@ -174,7 +174,7 @@ module Isuride
         case req.status
         # Acknowledge the ride
         when 'ENROUTE'
-          tx.xquery('UPDATE rides SET status = ?, updated_at = ? WHERE id = ?', 'ENROUTE', ride.fetch(:updated_at), ride.fetch(:id))
+          tx.xquery('UPDATE rides SET status = ?, updated_at = updated_at WHERE id = ?', 'ENROUTE', ride.fetch(:id))
           redis.call('RPUSH', "#{ride.fetch(:id)}:app", "ENROUTE")
           redis.call('RPUSH', "#{ride.fetch(:id)}:chair", "ENROUTE")
         # After Picking up user
@@ -183,7 +183,7 @@ module Isuride
           if status != 'PICKUP'
             raise HttpError.new(400, 'chair has not arrived yet')
           end
-          tx.xquery('UPDATE rides SET status = ?, updated_at = ? WHERE id = ?', 'CARRYING', ride.fetch(:updated_at), ride.fetch(:id))
+          tx.xquery('UPDATE rides SET status = ?, updated_at = updated_at WHERE id = ?', 'CARRYING', ride.fetch(:id))
           redis.call('RPUSH', "#{ride.fetch(:id)}:app", "CARRYING")
           redis.call('RPUSH', "#{ride.fetch(:id)}:chair", "CARRYING")
         else
