@@ -106,11 +106,17 @@ module Isuride
       items = db_transaction do |tx|
         rides = tx.xquery("SELECT * FROM rides WHERE user_id = ? AND status = 'COMPLETED' ORDER BY created_at DESC", @current_user.id)
 
+        chair_ids = rides.map {|ride| ride.fetch(:chair_id) }
+        chairs = tx.xquery('SELECT * FROM chairs WHERE id in (?)', chair_ids).to_a
+        chairs_idx = chairs.index_by {|o| o.fetch(:id) }
+        owner_ids = chairs.map {|chair| chair.fetch(:owner_id) }
+        owners_idx = tx.xquery('SELECT * FROM owners WHERE id in (?)', owner_ids).to_a.index_by {|o| o.fetch(:id) }
+
         rides.filter_map do |ride|
           fare = ride.fetch(:fare)
 
-          chair = tx.xquery('SELECT * FROM chairs WHERE id = ?', ride.fetch(:chair_id)).first
-          owner = tx.xquery('SELECT * FROM owners WHERE id = ?', chair.fetch(:owner_id)).first
+          chair = chairs_idx[ride.fetch(:chair_id)]
+          owner = owners_idx[chair.fetch(:owner_id)]
 
           {
             id: ride.fetch(:id),
