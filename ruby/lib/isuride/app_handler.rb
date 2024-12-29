@@ -293,10 +293,11 @@ module Isuride
     # GET /api/app/notification
     get '/notification' do
       response = db_transaction do |tx|
-        ride = tx.xquery('SELECT * FROM rides WHERE user_id = ? ORDER BY created_at DESC LIMIT 1', @current_user.id).first
-        if ride.nil?
+        unless @current_user.current_ride_id
           halt json(data: nil, retry_after_ms: 300)
         end
+
+        ride = tx.xquery('SELECT * FROM rides WHERE user_id = ? ORDER BY created_at DESC LIMIT 1', @current_user.id).first
 
         yet_sent_ride_status = redis.call('LPOP', "#{ride.fetch(:id)}:app")
         status =
