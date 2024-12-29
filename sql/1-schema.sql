@@ -128,7 +128,6 @@ ALTER TABLE coupons ADD INDEX used_by(used_by);
 ALTER TABLE rides ADD INDEX user_id_created_at(user_id, created_at desc);
 ALTER TABLE rides ADD INDEX chair_id_created_at(chair_id, created_at desc);
 ALTER TABLE rides ADD INDEX chair_id_updated_at(chair_id, updated_at desc);
-ALTER TABLE ride_statuses ADD INDEX ride_id_created_at(ride_id, created_at);
 ALTER TABLE chairs ADD INDEX access_token(access_token);
 ALTER TABLE chairs ADD INDEX owner_id(owner_id);
 ALTER TABLE chairs ADD INDEX is_active_current_ride_id(is_active, current_ride_id);
