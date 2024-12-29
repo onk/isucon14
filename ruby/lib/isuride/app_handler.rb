@@ -100,8 +100,6 @@ module Isuride
         owners_idx = tx.xquery('SELECT * FROM owners WHERE id in (?)', owner_ids).to_a.index_by {|o| o.fetch(:id) }
 
         rides.filter_map do |ride|
-          fare = ride.fetch(:fare)
-
           chair = chairs_idx[ride.fetch(:chair_id)]
           owner = owners_idx[chair.fetch(:owner_id)]
 
@@ -115,7 +113,7 @@ module Isuride
               latitude: ride.fetch(:destination_latitude),
               longitude: ride.fetch(:destination_longitude),
             },
-            fare:,
+            fare: ride.fetch(:fare),
             evaluation: ride.fetch(:evaluation),
             requested_at: time_msec(ride.fetch(:created_at)),
             completed_at: time_msec(ride.fetch(:updated_at)),
