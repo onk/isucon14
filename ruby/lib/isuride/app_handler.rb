@@ -95,7 +95,7 @@ module Isuride
 
         chair_ids = rides.map {|ride| ride.fetch(:chair_id) }
         chairs = tx.xquery('SELECT * FROM chairs WHERE id in (?)', chair_ids).to_a
-        chairs_idx = chairs.index_by {|o| o.fetch(:id) }
+        chairs_idx = chairs.index_by {|c| c.fetch(:id) }
         owner_ids = chairs.map {|chair| chair.fetch(:owner_id) }
         owners_idx = tx.xquery('SELECT * FROM owners WHERE id in (?)', owner_ids).to_a.index_by {|o| o.fetch(:id) }
 
