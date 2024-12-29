@@ -116,7 +116,7 @@ module Isuride
       response = db_without_transaction do |tx|
         set_current_chair
         unless @current_chair.current_ride_id
-          halt json(data: nil, retry_after_ms: 300)
+          halt json(data: nil, retry_after_ms: 500)
         end
 
         ride = tx.xquery('SELECT * FROM rides WHERE id = ?', @current_chair.current_ride_id).first
@@ -154,7 +154,7 @@ module Isuride
             },
             status:,
           },
-          retry_after_ms: 100,
+          retry_after_ms: 200,
         }
       end
 

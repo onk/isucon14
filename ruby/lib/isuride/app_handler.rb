@@ -295,7 +295,7 @@ module Isuride
     get '/notification' do
       response = db_without_transaction do |tx|
         unless @current_user.current_ride_id
-          halt json(data: nil, retry_after_ms: 300)
+          halt json(data: nil, retry_after_ms: 500)
         end
 
         ride = tx.xquery('SELECT * FROM rides WHERE id = ?', @current_user.current_ride_id).first
@@ -324,7 +324,7 @@ module Isuride
             created_at: time_msec(ride.fetch(:created_at)),
             updated_at: time_msec(ride.fetch(:updated_at)),
           },
-          retry_after_ms: 100,
+          retry_after_ms: 200,
         }
 
         unless ride.fetch(:chair_id).nil?
