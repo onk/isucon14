@@ -272,7 +272,9 @@ module Isuride
           raise HttpError.new(502, e.message)
         end
 
-        tx.xquery('UPDATE rides SET evaluation = ?, status = ? WHERE id = ?', req.evaluation, 'COMPLETED', ride_id)
+        now = Time.now
+
+        tx.xquery('UPDATE rides SET evaluation = ?, status = ?, updated_at = ? WHERE id = ?', req.evaluation, 'COMPLETED', now, ride_id)
         redis.call('RPUSH', "#{ride.fetch(:id)}:app", "COMPLETED")
         redis.call('RPUSH', "#{ride.fetch(:id)}:chair", "COMPLETED")
         if tx.affected_rows == 0
@@ -281,13 +283,8 @@ module Isuride
 
         tx.xquery('UPDATE chairs SET total_rides_count = total_rides_count + 1, total_evaluation = total_evaluation + ? WHERE id = ?', req.evaluation, ride.fetch(:chair_id))
 
-        ride = tx.xquery('SELECT * FROM rides WHERE id = ?', ride_id).first
-        if ride.nil?
-          raise HttpError.new(404, 'ride not found')
-        end
-
         {
-          completed_at: time_msec(ride.fetch(:updated_at)),
+          completed_at: time_msec(now),
         }
       end
 
