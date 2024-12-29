@@ -349,12 +349,22 @@ module Isuride
 
         unless ride.fetch(:chair_id).nil?
           chair = tx.xquery('SELECT * FROM chairs WHERE id = ?', ride.fetch(:chair_id)).first
-          stats = get_chair_stats(tx, chair.fetch(:id))
+
+          total_evaluation_avg =
+            if chair.fetch(:total_rides_count) > 0
+              chair.fetch(:total_evaluation).to_f / chair.fetch(:total_rides_count)
+            else
+              0.0
+            end
+
           response[:data][:chair] = {
             id: chair.fetch(:id),
             name: chair.fetch(:name),
             model: chair.fetch(:model),
-            stats:,
+            stats: {
+              total_rides_count: chairs.fetch(:total_rides_count),
+              total_evaluation_avg: total_evaluation_avg,
+            },
           }
         end
 
@@ -434,31 +444,6 @@ module Isuride
     end
 
     helpers do
-      def get_chair_stats(tx, chair_id)
-        rides = tx.xquery('SELECT * FROM rides WHERE chair_id = ? ORDER BY updated_at DESC', chair_id)
-
-        total_rides_count = 0
-        total_evaluation = 0.0
-        rides.each do |ride|
-          next unless ride.fetch(:status) == 'COMPLETED'
-
-          total_rides_count += 1
-          total_evaluation += ride.fetch(:evaluation)
-        end
-
-        total_evaluation_avg =
-          if total_rides_count > 0
-            total_evaluation / total_rides_count
-          else
-            0.0
-          end
-
-        {
-          total_rides_count:,
-          total_evaluation_avg:,
-        }
-      end
-
       def calculate_discounted_fare(tx, user_id, ride, pickup_latitude, pickup_longitude, dest_latitude, dest_longitude)
         discount =
           if !ride.nil?
