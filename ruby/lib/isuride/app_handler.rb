@@ -173,7 +173,7 @@ module Isuride
 
       fare = db_transaction do |tx|
         ride = tx.xquery("SELECT * FROM rides WHERE user_id = ? ORDER BY updated_at LIMIT 1", @current_user.id).first
-        if ride.fetch(:status) != 'COMPLETED'
+        if ride && ride.fetch(:status) != 'COMPLETED'
           raise HttpError.new(429, 'ride already exists')
         end
 
