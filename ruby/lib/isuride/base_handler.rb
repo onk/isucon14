@@ -85,10 +85,6 @@ module Isuride
         time.to_i*1000 + time.usec/1000
       end
 
-      def get_latest_ride_status(tx, ride_id)
-        tx.xquery('SELECT status FROM ride_statuses WHERE ride_id = ? ORDER BY created_at DESC LIMIT 1', ride_id).first.fetch(:status)
-      end
-
       # マンハッタン距離を求める
       def calculate_distance(a_latitude, a_longitude, b_latitude, b_longitude)
         (a_latitude - b_latitude).abs + (a_longitude - b_longitude).abs
