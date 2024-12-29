@@ -84,13 +84,12 @@ module Isuride
       response = db_without_transaction do |tx|
         chair_location_id = ULID.generate
         # update latest lat/lon, total_distance
-        total_distance = if @current_chair.latitude == 999999
-                           0
-                         else
-                           @current_chair.total_distance +
-                             calculate_distance(@current_chair.latitude, @current_chair.longitude, req.latitude, req.longitude)
-                         end
-        tx.xquery('UPDATE chairs SET latitude = ?, longitude = ?, total_distance = ?, total_distance_updated_at = now(), updated_at = updated_at WHERE id = ?', req.latitude, req.longitude, total_distance, @current_chair.id)
+        distance = if @current_chair.latitude == 999999
+                     0
+                   else
+                     calculate_distance(@current_chair.latitude, @current_chair.longitude, req.latitude, req.longitude)
+                   end
+        tx.xquery('UPDATE chairs SET latitude = ?, longitude = ?, total_distance = total_distance + ?, total_distance_updated_at = now(), updated_at = updated_at WHERE id = ?', req.latitude, req.longitude, distance, @current_chair.id)
 
         if @current_chair.current_ride_id
           ride = tx.xquery('SELECT * FROM rides WHERE id = ?', @current_chair.current_ride_id).first
