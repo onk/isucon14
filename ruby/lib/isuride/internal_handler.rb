@@ -32,11 +32,22 @@ module Isuride
           LIMIT 100
         SQL
 
-        # 速度が速い＆距離が近い順に椅子を探す
+        ride_distance = calculate_distance(
+          ride.fetch(:pickup_latitude), ride.fetch(:pickup_longitude),
+          ride.fetch(:destination_latitude), ride.fetch(:destination_longitude)
+        )
+
+        # (待ち時間 + 実乗車時間)が最小になるように椅子を選ぶ
+        #   (待ち距離 + 実乗車距離) / 速度
         sorted = chairs.sort_by { |chair|
+          pickup_distance = calculate_distance(
+            ride.fetch(:pickup_latitude), ride.fetch(:pickup_longitude),
+            chair.fetch(:latitude), chair.fetch(:longitude)
+          )
+
           [
-            -chair[:speed],
-            calculate_distance(ride.fetch(:pickup_latitude), ride.fetch(:pickup_longitude), chair.fetch(:latitude), chair.fetch(:longitude))
+            (pickup_distance + ride_distance).to_f / chair[:speed],
+            pickup_distance, # 合計が同じなら近い椅子を優先する
           ]
         }
 
