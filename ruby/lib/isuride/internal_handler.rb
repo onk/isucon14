@@ -53,9 +53,9 @@ module Isuride
 
         sorted.each do |matched|
           # 椅子が別の町だったらスキップして次の椅子を探す
-          # distanec が > 50 だったら別の町ということにする
+          # distanec が > 250 だったら別の町ということにする
           distance = calculate_distance(ride.fetch(:pickup_latitude), ride.fetch(:pickup_longitude), matched.fetch(:latitude), matched.fetch(:longitude))
-          next if distance > 50
+          next if distance > 250
 
           db.xquery('UPDATE rides SET chair_id = ? WHERE id = ?', matched.fetch(:id), ride.fetch(:id))
           db.xquery('UPDATE chairs SET current_ride_id = ? WHERE id = ?', ride.fetch(:id), matched.fetch(:id))
