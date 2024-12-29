@@ -6,7 +6,7 @@ module Isuride
     # GET /api/internal/matching
     get '/matching' do
       # MEMO: 一旦最も待たせているリクエストに適当な空いている椅子マッチさせる実装とする。おそらくもっといい方法があるはず…
-      rides = db.query('SELECT * FROM rides WHERE chair_id IS NULL ORDER BY created_at LIMIT 10').to_a
+      rides = db.query('SELECT * FROM rides WHERE chair_id IS NULL ORDER BY created_at LIMIT 20').to_a
 
       rides.each do |ride|
         match_chair_for_ride(ride)
