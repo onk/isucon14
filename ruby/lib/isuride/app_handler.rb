@@ -308,8 +308,6 @@ module Isuride
             yet_sent_ride_status
           end
 
-        fare = ride.fetch(:fare)
-
         response = {
           data: {
             ride_id: ride.fetch(:id),
@@ -321,7 +319,7 @@ module Isuride
               latitude: ride.fetch(:destination_latitude),
               longitude: ride.fetch(:destination_longitude),
             },
-            fare:,
+            fare: ride.fetch(:fare),
             status:,
             created_at: time_msec(ride.fetch(:created_at)),
             updated_at: time_msec(ride.fetch(:updated_at)),
