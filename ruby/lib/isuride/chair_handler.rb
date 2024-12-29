@@ -79,10 +79,10 @@ module Isuride
 
       response = db_transaction do |tx|
         # update latest lat/lon, total_distance
-        distance = if @current_chair.latitude == 999999
-                     0
-                   else
+        distance = if @current_chair.latitude
                      calculate_distance(@current_chair.latitude, @current_chair.longitude, req.latitude, req.longitude)
+                   else
+                     0
                    end
         tx.xquery('UPDATE chairs SET latitude = ?, longitude = ?, total_distance = total_distance + ?, total_distance_updated_at = now(), updated_at = updated_at WHERE id = ?', req.latitude, req.longitude, distance, @current_chair.id)
 

@@ -401,10 +401,8 @@ module Isuride
         chairs = tx.query('SELECT * FROM chairs WHERE is_active = TRUE AND current_ride_id IS NULL')
 
         nearby_chairs = chairs.filter_map do |chair|
-          # 最新の位置情報を取得
-          if chair[:latitude] == 999999
-            next
-          end
+          # 投入直後で位置が分からない椅子はスキップ
+          next unless chair[:latitude]
 
           if calculate_distance(latitude, longitude, chair.fetch(:latitude), chair.fetch(:longitude)) <= distance
             {
