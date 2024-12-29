@@ -297,7 +297,7 @@ module Isuride
           halt json(data: nil, retry_after_ms: 300)
         end
 
-        ride = tx.xquery('SELECT * FROM rides WHERE user_id = ? ORDER BY created_at DESC LIMIT 1', @current_user.id).first
+        ride = tx.xquery('SELECT * FROM rides WHERE id = ?', @current_user.current_ride_id).first
 
         yet_sent_ride_status = redis.call('LPOP', "#{ride.fetch(:id)}:app")
         status =
