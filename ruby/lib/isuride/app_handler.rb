@@ -90,15 +90,14 @@ module Isuride
         rides = tx.xquery("SELECT * FROM rides WHERE user_id = ? AND status = 'COMPLETED' ORDER BY created_at DESC", @current_user.id).to_a
 
         if rides.empty?
-          chairs_idx = {}
-          owners_idx = {}
-        else
-          chair_ids = rides.map {|ride| ride.fetch(:chair_id) }
-          chairs = tx.xquery('SELECT * FROM chairs WHERE id in (?)', chair_ids).to_a
-          chairs_idx = chairs.index_by {|o| o.fetch(:id) }
-          owner_ids = chairs.map {|chair| chair.fetch(:owner_id) }
-          owners_idx = tx.xquery('SELECT * FROM owners WHERE id in (?)', owner_ids).to_a.index_by {|o| o.fetch(:id) }
+          return json(rides: [])
         end
+
+        chair_ids = rides.map {|ride| ride.fetch(:chair_id) }
+        chairs = tx.xquery('SELECT * FROM chairs WHERE id in (?)', chair_ids).to_a
+        chairs_idx = chairs.index_by {|o| o.fetch(:id) }
+        owner_ids = chairs.map {|chair| chair.fetch(:owner_id) }
+        owners_idx = tx.xquery('SELECT * FROM owners WHERE id in (?)', owner_ids).to_a.index_by {|o| o.fetch(:id) }
 
         rides.filter_map do |ride|
           fare = ride.fetch(:fare)
