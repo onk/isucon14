@@ -172,14 +172,8 @@ module Isuride
       ride_id = ULID.generate
 
       fare = db_transaction do |tx|
-        rides = tx.xquery('SELECT * FROM rides WHERE user_id = ?', @current_user.id).to_a
-
-        continuing_ride_count = rides.count do |ride|
-          status = ride.fetch(:status)
-          status != 'COMPLETED'
-        end
-
-        if continuing_ride_count > 0
+        ride = tx.xquery("SELECT * FROM rides WHERE user_id = ? ORDER BY updated_at LIMIT 1", @current_user.id).first
+        if ride.fetch(:status) != 'COMPLETED'
           raise HttpError.new(429, 'ride already exists')
         end
 
