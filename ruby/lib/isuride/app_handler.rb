@@ -253,22 +253,6 @@ module Isuride
           raise HttpError.new(400, 'not arrived yet')
         end
 
-        tx.xquery('UPDATE rides SET evaluation = ?, status = ? WHERE id = ?', req.evaluation, 'COMPLETED', ride_id)
-        redis.call('RPUSH', "#{ride.fetch(:id)}:app", "COMPLETED")
-        redis.call('RPUSH', "#{ride.fetch(:id)}:chair", "COMPLETED")
-        if tx.affected_rows == 0
-          raise HttpError.new(404, 'ride not found')
-        end
-
-        tx.xquery('UPDATE chairs SET total_rides_count = total_rides_count + 1, total_evaluation = total_evaluation + ? WHERE id = ?', req.evaluation, ride.fetch(:chair_id))
-
-        tx.xquery('INSERT INTO ride_statuses (id, ride_id, status) VALUES (?, ?, ?)', ULID.generate, ride_id, 'COMPLETED')
-
-        ride = tx.xquery('SELECT * FROM rides WHERE id = ?', ride_id).first
-        if ride.nil?
-          raise HttpError.new(404, 'ride not found')
-        end
-
         payment_token = tx.xquery('SELECT * FROM payment_tokens WHERE user_id = ?', ride.fetch(:user_id)).first
         if payment_token.nil?
           raise HttpError.new(400, 'payment token not registered')
@@ -284,6 +268,22 @@ module Isuride
           end
         rescue PaymentGateway::ErroredUpstream => e
           raise HttpError.new(502, e.message)
+        end
+
+        tx.xquery('UPDATE rides SET evaluation = ?, status = ? WHERE id = ?', req.evaluation, 'COMPLETED', ride_id)
+        redis.call('RPUSH', "#{ride.fetch(:id)}:app", "COMPLETED")
+        redis.call('RPUSH', "#{ride.fetch(:id)}:chair", "COMPLETED")
+        if tx.affected_rows == 0
+          raise HttpError.new(404, 'ride not found')
+        end
+
+        tx.xquery('UPDATE chairs SET total_rides_count = total_rides_count + 1, total_evaluation = total_evaluation + ? WHERE id = ?', req.evaluation, ride.fetch(:chair_id))
+
+        tx.xquery('INSERT INTO ride_statuses (id, ride_id, status) VALUES (?, ?, ?)', ULID.generate, ride_id, 'COMPLETED')
+
+        ride = tx.xquery('SELECT * FROM rides WHERE id = ?', ride_id).first
+        if ride.nil?
+          raise HttpError.new(404, 'ride not found')
         end
 
         tx.xquery('UPDATE users SET current_ride_id = NULL, ride_count = ride_count + 1 WHERE id = ?', ride.fetch(:user_id))
