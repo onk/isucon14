@@ -282,8 +282,6 @@ module Isuride
           raise HttpError.new(404, 'ride not found')
         end
 
-        tx.xquery('UPDATE users SET current_ride_id = NULL, ride_count = ride_count + 1 WHERE id = ?', ride.fetch(:user_id))
-
         {
           completed_at: time_msec(ride.fetch(:updated_at)),
         }
@@ -346,6 +344,12 @@ module Isuride
               total_evaluation_avg: total_evaluation_avg,
             },
           }
+        end
+
+        unless yet_sent_ride_status.nil?
+          if status == 'COMPLETED'
+            tx.xquery('UPDATE users SET current_ride_id = NULL, ride_count = ride_count + 1 WHERE id = ?', ride.fetch(:user_id))
+          end
         end
 
         response
